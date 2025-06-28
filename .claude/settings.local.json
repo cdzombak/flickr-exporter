@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go mod:*)",
+      "Bash(go list:*)",
+      "Bash(go get:*)",
+      "Bash(go:*)",
+      "WebFetch(domain:pkg.go.dev)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.flickr.com)",
+      "Bash(rm:*)",
+      "Bash(./flickr-exporter:*)",
+      "Bash(find:*)"
+    ],
+    "deny": []
+  }
+}
