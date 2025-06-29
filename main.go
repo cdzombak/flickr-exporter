@@ -17,6 +17,7 @@ var (
 	oauthTokenSecret string
 	credsFile        string
 	credsFileSave    string
+	verbose          bool
 )
 
 type Credentials struct {
@@ -45,19 +46,19 @@ You'll need to visit a URL and authorize the application.`,
 			fmt.Printf("Error loading credentials: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		if apiKey == "" || apiSecret == "" {
 			fmt.Println("Error: Both API key and API secret are required for authentication")
 			fmt.Println("Provide them via flags or credentials file (-c)")
 			os.Exit(1)
 		}
-		
+
 		oauthToken, oauthTokenSecret, err := performOAuthFlow(apiKey, apiSecret)
 		if err != nil {
 			fmt.Printf("Error during authentication: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		// Save credentials to file if requested
 		if credsFileSave != "" {
 			creds := Credentials{
@@ -66,13 +67,13 @@ You'll need to visit a URL and authorize the application.`,
 				OAuthToken:       oauthToken,
 				OAuthTokenSecret: oauthTokenSecret,
 			}
-			
+
 			err := saveCredentials(credsFileSave, creds)
 			if err != nil {
 				fmt.Printf("Error saving credentials: %v\n", err)
 				os.Exit(1)
 			}
-			
+
 			fmt.Printf("Credentials saved to %s\n", credsFileSave)
 			fmt.Printf("You can now use: ./flickr-exporter -c %s [command]\n", credsFileSave)
 		}
@@ -90,27 +91,32 @@ var albumCmd = &cobra.Command{
 			fmt.Printf("Error loading credentials: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		if apiKey == "" || apiSecret == "" {
 			fmt.Println("Error: Both API key and API secret are required")
 			fmt.Println("Provide them via flags or credentials file (-c)")
 			os.Exit(1)
 		}
-		
-		exporter, err := NewFlickrExporter(apiKey, apiSecret, oauthToken, oauthTokenSecret, outputDir)
+
+		exporter, err := NewFlickrExporter(apiKey, apiSecret, oauthToken, oauthTokenSecret, outputDir, verbose)
 		if err != nil {
 			fmt.Printf("Error creating exporter: %v\n", err)
 			os.Exit(1)
 		}
-		
+
+		var hasErrors bool
 		for _, albumID := range args {
 			fmt.Printf("Exporting album %s...\n", albumID)
 			err := exporter.ExportAlbum(albumID)
 			if err != nil {
 				fmt.Printf("Error exporting album %s: %v\n", albumID, err)
+				hasErrors = true
 				continue
 			}
 			fmt.Printf("Successfully exported album %s\n", albumID)
+		}
+		if hasErrors {
+			os.Exit(1)
 		}
 	},
 }
@@ -126,27 +132,32 @@ var collectionCmd = &cobra.Command{
 			fmt.Printf("Error loading credentials: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		if apiKey == "" || apiSecret == "" {
 			fmt.Println("Error: Both API key and API secret are required")
 			fmt.Println("Provide them via flags or credentials file (-c)")
 			os.Exit(1)
 		}
-		
-		exporter, err := NewFlickrExporter(apiKey, apiSecret, oauthToken, oauthTokenSecret, outputDir)
+
+		exporter, err := NewFlickrExporter(apiKey, apiSecret, oauthToken, oauthTokenSecret, outputDir, verbose)
 		if err != nil {
 			fmt.Printf("Error creating exporter: %v\n", err)
 			os.Exit(1)
 		}
-		
+
+		var hasErrors bool
 		for _, collectionID := range args {
 			fmt.Printf("Exporting collection %s...\n", collectionID)
 			err := exporter.ExportCollection(collectionID)
 			if err != nil {
 				fmt.Printf("Error exporting collection %s: %v\n", collectionID, err)
+				hasErrors = true
 				continue
 			}
 			fmt.Printf("Successfully exported collection %s\n", collectionID)
+		}
+		if hasErrors {
+			os.Exit(1)
 		}
 	},
 }
@@ -162,19 +173,19 @@ var allCmd = &cobra.Command{
 			fmt.Printf("Error loading credentials: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		if apiKey == "" || apiSecret == "" {
 			fmt.Println("Error: Both API key and API secret are required")
 			fmt.Println("Provide them via flags or credentials file (-c)")
 			os.Exit(1)
 		}
-		
-		exporter, err := NewFlickrExporter(apiKey, apiSecret, oauthToken, oauthTokenSecret, outputDir)
+
+		exporter, err := NewFlickrExporter(apiKey, apiSecret, oauthToken, oauthTokenSecret, outputDir, verbose)
 		if err != nil {
 			fmt.Printf("Error creating exporter: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		fmt.Println("Exporting all photos...")
 		err = exporter.ExportAllPhotos()
 		if err != nil {
@@ -187,50 +198,50 @@ var allCmd = &cobra.Command{
 
 func performOAuthFlow(apiKey, apiSecret string) (string, string, error) {
 	client := flickr.NewFlickrClient(apiKey, apiSecret)
-	
+
 	// Step 1: Get request token
 	fmt.Println("Getting request token...")
 	fmt.Printf("Using API Key: %s\n", apiKey)
 	fmt.Printf("Using API Secret: %s\n", apiSecret[:8]+"...")
-	
+
 	requestTok, err := flickr.GetRequestToken(client)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to get request token: %w", err)
 	}
-	
+
 	// Step 2: Get authorization URL
 	authUrl, err := flickr.GetAuthorizeUrl(client, requestTok)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to get authorization URL: %w", err)
 	}
-	
+
 	// Step 3: Ask user to authorize
 	fmt.Printf("\nPlease visit this URL to authorize the application:\n%s\n\n", authUrl)
 	fmt.Print("After authorizing, enter the verification code: ")
-	
+
 	var verificationCode string
 	_, err = fmt.Scanln(&verificationCode)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to read verification code: %w", err)
 	}
-	
+
 	// Step 4: Get access token
 	fmt.Println("Getting access token...")
 	accessTok, err := flickr.GetAccessToken(client, requestTok, verificationCode)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to get access token: %w", err)
 	}
-	
+
 	// Step 5: Display tokens
 	fmt.Printf("\nAuthentication successful!\n")
 	fmt.Printf("OAuth Token: %s\n", accessTok.OAuthToken)
 	fmt.Printf("OAuth Token Secret: %s\n", accessTok.OAuthTokenSecret)
-	
+
 	if credsFileSave == "" {
 		fmt.Printf("\nSave these tokens and use them with:\n")
 		fmt.Printf("--oauth-token %s --oauth-token-secret %s\n", accessTok.OAuthToken, accessTok.OAuthTokenSecret)
 	}
-	
+
 	return accessTok.OAuthToken, accessTok.OAuthTokenSecret, nil
 }
 
@@ -239,12 +250,12 @@ func saveCredentials(filename string, creds Credentials) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal credentials: %w", err)
 	}
-	
+
 	err = os.WriteFile(filename, data, 0600) // Secure permissions
 	if err != nil {
 		return fmt.Errorf("failed to write credentials file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -253,13 +264,13 @@ func loadCredentials(filename string) (*Credentials, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read credentials file: %w", err)
 	}
-	
+
 	var creds Credentials
 	err = yaml.Unmarshal(data, &creds)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse credentials file: %w", err)
 	}
-	
+
 	return &creds, nil
 }
 
@@ -267,12 +278,12 @@ func loadCredsIfProvided() error {
 	if credsFile == "" {
 		return nil // No credentials file specified
 	}
-	
+
 	creds, err := loadCredentials(credsFile)
 	if err != nil {
 		return fmt.Errorf("failed to load credentials: %w", err)
 	}
-	
+
 	// Only override if not already set via flags
 	if apiKey == "" {
 		apiKey = creds.APIKey
@@ -286,7 +297,7 @@ func loadCredsIfProvided() error {
 	if oauthTokenSecret == "" {
 		oauthTokenSecret = creds.OAuthTokenSecret
 	}
-	
+
 	return nil
 }
 
@@ -298,10 +309,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&oauthToken, "oauth-token", "", "OAuth token")
 	rootCmd.PersistentFlags().StringVar(&oauthTokenSecret, "oauth-token-secret", "", "OAuth token secret")
 	rootCmd.PersistentFlags().StringVarP(&credsFile, "creds-file", "c", "", "Credentials file (YAML)")
-	
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose logging (show individual photo downloads)")
+
 	// Auth command specific flags
 	authCmd.Flags().StringVar(&credsFileSave, "save-creds", "", "Save credentials to this YAML file")
-	
+
 	// Add subcommands
 	rootCmd.AddCommand(authCmd)
 	rootCmd.AddCommand(albumCmd)

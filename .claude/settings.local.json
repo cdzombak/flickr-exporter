@@ -10,7 +10,14 @@
       "WebFetch(domain:www.flickr.com)",
       "Bash(rm:*)",
       "Bash(./flickr-exporter:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(timeout 60 go run . all --verbose --output test-output --creds-file creds.yml 2 >& 1)",
+      "Bash(timeout 30 go run . all --verbose --output test-output2 --creds-file creds.yml 2 >& 1)",
+      "Bash(timeout 15 go run . all --verbose --output test-debug --creds-file creds.yml)",
+      "Bash(timeout 30 go run . all --output test-quick --creds-file creds.yml 2 >& 1)",
+      "Bash(timeout 5m go run . all --output test-final --creds-file creds.yml 2 >& 1)",
+      "Bash(timeout:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
