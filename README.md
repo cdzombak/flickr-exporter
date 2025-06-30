@@ -133,3 +133,7 @@ This metadata can be viewed in most photo management applications and is preserv
 ## Author
 
 Claude wrote this code with management by Chris Dzombak ([dzombak.com](https://www.dzombak.com) / [github.com/cdzombak](https://www.github.com/cdzombak)).
+
+## License
+
+GNU GPL v3; see [LICENSE](LICENSE) in this repo.
