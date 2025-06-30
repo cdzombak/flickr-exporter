@@ -167,10 +167,17 @@ func (fe *FlickrExporter) ExportAllPhotos() error {
 		go func(workerID int) {
 			defer wg.Done()
 			// Create a separate exporter for this worker to avoid race conditions
+			workerET, err := exiftool.NewExiftool()
+			if err != nil {
+				errorChan <- fmt.Errorf("worker %d: could not initialize exiftool: %w", workerID, err)
+				return
+			}
+			defer workerET.Close()
+			
 			workerExporter := &FlickrExporter{
 				client:    flickr.NewFlickrClient(fe.client.ApiKey, fe.client.ApiSecret),
 				outputDir: fe.outputDir,
-				et:        nil, // Will be initialized if needed
+				et:        workerET,
 				verbose:   fe.verbose,
 			}
 			workerExporter.client.OAuthToken = fe.client.OAuthToken
@@ -658,10 +665,17 @@ func (fe *FlickrExporter) downloadUnorganizedPhotos(downloadedFiles map[string]b
 		go func(workerID int) {
 			defer wg.Done()
 			// Create a separate exporter for this worker to avoid race conditions
+			workerET, err := exiftool.NewExiftool()
+			if err != nil {
+				errorChan <- fmt.Errorf("worker %d: could not initialize exiftool: %w", workerID, err)
+				return
+			}
+			defer workerET.Close()
+			
 			workerExporter := &FlickrExporter{
 				client:    flickr.NewFlickrClient(fe.client.ApiKey, fe.client.ApiSecret),
 				outputDir: fe.outputDir,
-				et:        nil, // Will be initialized if needed
+				et:        workerET,
 				verbose:   fe.verbose,
 			}
 			workerExporter.client.OAuthToken = fe.client.OAuthToken
