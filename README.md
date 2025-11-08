@@ -43,7 +43,7 @@ Before using flickr-exporter, you need to authenticate with Flickr:
 
 2. **Authenticate flickr-exporter:**
    ```bash
-   ./flickr-exporter auth -key YOUR_API_KEY -secret YOUR_API_SECRET
+   ./flickr-exporter auth -k YOUR_API_KEY -s YOUR_API_SECRET
    ```
    - This will open your browser to authorize the application
    - Follow the prompts to save your credentials to a file (e.g., `creds.yml`)
@@ -115,7 +115,7 @@ This metadata can be viewed in most photo management applications and is preserv
 
 ```bash
 # Authenticate (one-time setup)
-./flickr-exporter auth -key abc123 -secret xyz789
+./flickr-exporter auth -k abc123 -s xyz789
 
 # Save credentials to a file after authentication
 # Follow the prompts to save to creds.yml
