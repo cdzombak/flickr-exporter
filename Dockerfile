@@ -10,6 +10,7 @@ RUN CGO_ENABLED=0 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${
 
 FROM alpine:latest
 ARG BIN_NAME
+ARG BIN_VERSION
 RUN apk add --no-cache ca-certificates perl exiftool
 COPY --from=builder /src/flickr-exporter/out/${BIN_NAME} /usr/bin/flickr-exporter
 ENTRYPOINT ["/usr/bin/flickr-exporter"]
