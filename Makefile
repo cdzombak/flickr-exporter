@@ -16,37 +16,39 @@ all: clean build-linux-amd64 build-linux-arm64 build-linux-386 build-linux-armv7
 clean: ## Remove build products (./out)
 	rm -rf ./out
 
-.PHONY: build
-build: ## Build for the current platform & architecture to ./out
+out:
 	mkdir -p out
+
+.PHONY: build
+build: | out ## Build for the current platform & architecture to ./out
 	env CGO_ENABLED=0 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME} .
 
 .PHONY: build-linux-amd64
-build-linux-amd64: ## Build for Linux/amd64 to ./out
+build-linux-amd64: | out ## Build for Linux/amd64 to ./out
 	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME}-${BIN_VERSION}-linux-amd64 .
 
 .PHONY: build-linux-arm64
-build-linux-arm64: ## Build for Linux/arm64 to ./out
+build-linux-arm64: | out ## Build for Linux/arm64 to ./out
 	env CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME}-${BIN_VERSION}-linux-arm64 .
 
 .PHONY: build-linux-386
-build-linux-386: ## Build for Linux/386 to ./out
+build-linux-386: | out ## Build for Linux/386 to ./out
 	env CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME}-${BIN_VERSION}-linux-386 .
 
 .PHONY: build-linux-armv7
-build-linux-armv7: ## Build for Linux/armv7 to ./out
+build-linux-armv7: | out ## Build for Linux/armv7 to ./out
 	env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME}-${BIN_VERSION}-linux-armv7 .
 
 .PHONY: build-linux-armv6
-build-linux-armv6: ## Build for Linux/armv6 to ./out
+build-linux-armv6: | out ## Build for Linux/armv6 to ./out
 	env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME}-${BIN_VERSION}-linux-armv6 .
 
 .PHONY: build-darwin-amd64
-build-darwin-amd64: ## Build for macOS/amd64 to ./out
+build-darwin-amd64: | out ## Build for macOS/amd64 to ./out
 	env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME}-${BIN_VERSION}-darwin-amd64 .
 
 .PHONY: build-darwin-arm64
-build-darwin-arm64: ## Build for macOS/arm64 to ./out
+build-darwin-arm64: | out ## Build for macOS/arm64 to ./out
 	env CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.version=${BIN_VERSION}" -o ./out/${BIN_NAME}-${BIN_VERSION}-darwin-arm64 .
 
 .PHONY: package
