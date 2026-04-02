@@ -2,6 +2,7 @@
 
 # Binary name
 BINARY = flickr-exporter
+BIN_VERSION := $(shell ./.version.sh)
 
 # Go parameters
 GOCMD = go
@@ -12,7 +13,7 @@ GOCLEAN = $(GOCMD) clean
 all: build
 
 build:
-	$(GOBUILD) -o $(BINARY) -v
+	$(GOBUILD) -ldflags="-X main.version=$(BIN_VERSION)" -o $(BINARY) -v
 
 # Clean target - removes only the binary, not downloaded photos
 clean:

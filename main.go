@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var version = "<dev>"
+
 var (
 	apiKey           string
 	apiSecret        string
@@ -313,6 +315,8 @@ func init() {
 
 	// Auth command specific flags
 	authCmd.Flags().StringVar(&credsFileSave, "save-creds", "", "Save credentials to this YAML file")
+
+	rootCmd.Version = version
 
 	// Add subcommands
 	rootCmd.AddCommand(authCmd)
