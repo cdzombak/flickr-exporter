@@ -225,30 +225,6 @@ func (fe *FlickrExporter) ExportAllPhotos() error {
 	return nil
 }
 
-func (fe *FlickrExporter) albumWorker(workerID int, workerExporter *FlickrExporter, albumChan <-chan Album, errorChan chan<- error) {
-	for album := range albumChan {
-		fmt.Printf("[Worker %d] Processing album: %s\n", workerID, album.Title)
-
-		// Get photos for this album using the worker's exporter
-		photos, err := workerExporter.getAlbumPhotos(album.ID)
-		if err != nil {
-			errorChan <- fmt.Errorf("worker %d: failed to get photos for album %s: %w", workerID, album.Title, err)
-			continue
-		}
-		album.Photos = photos
-
-		// Download the album using the worker's exporter
-		err = workerExporter.downloadAlbum(album)
-		if err != nil {
-			errorChan <- fmt.Errorf("worker %d: failed to download album %s: %w", workerID, album.Title, err)
-			continue
-		}
-
-		fmt.Printf("[Worker %d] Completed album: %s (%d photos)\n", workerID, album.Title, len(photos))
-		errorChan <- nil // Signal successful completion
-	}
-}
-
 func (fe *FlickrExporter) albumWorkerWithTracking(workerID int, workerExporter *FlickrExporter, albumChan <-chan Album, errorChan chan<- error, downloadedFiles map[string]bool, mutex *sync.Mutex) {
 	for album := range albumChan {
 		fmt.Printf("[Worker %d] Processing album: %s\n", workerID, album.Title)
