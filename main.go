@@ -37,15 +37,6 @@ Supports exporting single albums, collections, or all photos.
 Photos are organized by album with date prefixes and include EXIF/IPTC metadata.`,
 }
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print version information and exit",
-	Args:  cobra.NoArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("flickr-exporter %s\n", version)
-	},
-}
-
 var authCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authenticate with Flickr to get OAuth tokens",
@@ -325,8 +316,9 @@ func init() {
 	// Auth command specific flags
 	authCmd.Flags().StringVar(&credsFileSave, "save-creds", "", "Save credentials to this YAML file")
 
+	rootCmd.Version = version
+
 	// Add subcommands
-	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(authCmd)
 	rootCmd.AddCommand(albumCmd)
 	rootCmd.AddCommand(collectionCmd)
