@@ -1,0 +1,6 @@
+-s dir
+--name flickr-exporter
+--description "A command-line tool to download and archive your Flickr photos with metadata preservation"
+--url "https://github.com/cdzombak/flickr-exporter"
+--maintainer "Chris Dzombak <https://www.dzombak.com>"
+--license GPL-3.0
