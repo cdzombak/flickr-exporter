@@ -15,19 +15,76 @@ A command-line tool to download and archive your Flickr photos with metadata pre
 - Downloads photos in their original resolution
 - Failed downloads are reported at the end of the process
 
-## Requirements & Building
+## Installation
 
 ### Requirements
-- Go 1.16 or later
-- ExifTool (for metadata writing)
-  - macOS: `brew install exiftool`
-  - Linux: `sudo apt-get install libimage-exiftool-perl`
-  - Windows: Download from https://exiftool.org
 
-### Building
-```bash
-go build -o flickr-exporter
+flickr-exporter requires [ExifTool](https://exiftool.org) for metadata writing:
+- macOS: `brew install exiftool`
+- Linux: `sudo apt-get install libimage-exiftool-perl`
+- Windows: Download from https://exiftool.org
+
+### macOS via Homebrew
+
+```shell
+brew install cdzombak/oss/flickr-exporter
 ```
+
+### Debian via apt repository
+
+[Install my Debian repository](https://www.dzombak.com/blog/2025/06/updated-instructions-for-installing-my-debian-package-repositories/) if you haven't already:
+
+```shell
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://dist.cdzombak.net/keys/dist-cdzombak-net.gpg -o /etc/apt/keyrings/dist-cdzombak-net.gpg
+sudo chmod 644 /etc/apt/keyrings/dist-cdzombak-net.gpg
+sudo mkdir -p /etc/apt/sources.list.d
+sudo curl -fsSL https://dist.cdzombak.net/cdzombak-oss.sources -o /etc/apt/sources.list.d/cdzombak-oss.sources
+sudo chmod 644 /etc/apt/sources.list.d/cdzombak-oss.sources
+sudo apt update
+```
+
+Then install `flickr-exporter` via `apt-get`:
+
+```shell
+sudo apt-get install flickr-exporter
+```
+
+### Manual installation from build artifacts
+
+Pre-built binaries for Linux and macOS on various architectures are downloadable from each [GitHub Release](https://github.com/cdzombak/flickr-exporter/releases). Debian packages for each release are available as well.
+
+### Build and install locally
+
+```shell
+git clone https://github.com/cdzombak/flickr-exporter.git
+cd flickr-exporter
+make build
+
+cp out/flickr-exporter $INSTALL_DIR
+```
+
+### Docker images
+
+Docker images are available for a variety of Linux architectures from [Docker Hub](https://hub.docker.com/r/cdzombak/flickr-exporter) and [GHCR](https://github.com/cdzombak/flickr-exporter/pkgs/container/flickr-exporter). Images are based on Alpine Linux and include ExifTool.
+
+Run them via, for example:
+
+```shell
+docker run --rm \
+  -v /path/to/creds.yml:/creds.yml \
+  -v /path/to/output:/output \
+  cdzombak/flickr-exporter:1 \
+  -c /creds.yml all -o /output
+
+docker run --rm \
+  -v /path/to/creds.yml:/creds.yml \
+  -v /path/to/output:/output \
+  ghcr.io/cdzombak/flickr-exporter:1 \
+  -c /creds.yml all -o /output
+```
+
+> **Note:** The `auth` subcommand requires interactive terminal input. Run authentication on the host first using a native binary, then mount the resulting credentials file into the container for export commands.
 
 ## Usage
 
