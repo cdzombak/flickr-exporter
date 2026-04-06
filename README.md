@@ -68,7 +68,18 @@ cp out/flickr-exporter $INSTALL_DIR
 
 Docker images are available for a variety of Linux architectures from [Docker Hub](https://hub.docker.com/r/cdzombak/flickr-exporter) and [GHCR](https://github.com/cdzombak/flickr-exporter/pkgs/container/flickr-exporter). Images are based on Alpine Linux and include ExifTool.
 
-Run them via, for example:
+#### Authentication via Docker
+
+The `auth` subcommand requires interactive terminal input. Run it with the `-it` flag and mount a volume for the credentials file:
+
+```shell
+docker run --rm -it \
+  -v /path/to/creddir:/creds \
+  cdzombak/flickr-exporter:1 \
+  auth -k YOUR_API_KEY -s YOUR_API_SECRET --save-creds /creds/creds.yml
+```
+
+#### Exporting photos via Docker
 
 ```shell
 docker run --rm \
@@ -83,8 +94,6 @@ docker run --rm \
   ghcr.io/cdzombak/flickr-exporter:1 \
   -c /creds.yml all -o /output
 ```
-
-> **Note:** The `auth` subcommand requires interactive terminal input. Run authentication on the host first using a native binary, then mount the resulting credentials file into the container for export commands.
 
 ## Usage
 
